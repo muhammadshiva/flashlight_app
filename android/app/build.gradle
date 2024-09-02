@@ -1,0 +1,104 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader("UTF-8") { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty("flutter.versionCode")
+if (flutterVersionCode == null) {
+    flutterVersionCode = "1"
+}
+
+def flutterVersionName = localProperties.getProperty("flutter.versionName")
+if (flutterVersionName == null) {
+    flutterVersionName = "1.0"
+}
+
+android {
+    namespace = "com.example.flashlight_cashier"
+    compileSdk = 34
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
+        applicationId = "com.example.flashlight_cashier"
+        // You can update the following values to match your application needs.
+        // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
+        minSdk = flutter.minSdkVersion
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutterVersionCode.toInteger()
+        versionName = flutterVersionName
+    }
+
+    buildTypes {
+        release {
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.debug
+            applicationVariants.all { variant ->
+                variant.outputs.all { output ->
+                    def productFlavorsName = productFlavors.name.toString()
+                    def oldApkFlavorsName = productFlavorsName.replace("[", "").trim()
+                    def newApkFlavorsName = oldApkFlavorsName.replace("]", "").trim()
+                    // println("newApkFlavorsName=" + newApkFlavorsName)
+                    def project = "Flashlight App-"
+                    def SEP = "_"
+                    def PLUS = "+"
+                    def buildType = variant.buildType.name
+                    def version = variant.versionName
+                    def versionCodeApp = variant.versionCode
+                    def date = new Date()
+                    def formattedDateWHour = date.format('dd-MM-yy_HH:mm')
+                    def formattedDateWOHour = date.format('dd-MM-yy')
+                    
+                    // def newApkName = project + version + SEP + buildType + SEP + formattedDateWHour + ".apk"
+                    def newApkName = project + version + PLUS + versionCodeApp + SEP + newApkFlavorsName + SEP + formattedDateWOHour + ".apk"
+                    outputFileName = new File(newApkName)
+                }
+            }
+        }
+    }
+
+    flavorDimensions "flavors"
+    productFlavors {
+        dev {
+            dimension "flavors"
+            applicationIdSuffix ".dev"
+            // resValue "string", "app_name", "Flashlight Dev" 
+            // versionNameSuffix "-alpha"
+            // buildConfigField("String", "FLAVOR_CONFIGURATION", '"development"')
+            resValue "string", "app_name", "Flashlight Development"
+        }
+        stag {
+            dimension "flavors"
+            applicationIdSuffix ".staging"
+            // resValue "string", "app_name", "Flashlight Staging" 
+            // versionNameSuffix "-beta"
+            // buildConfigField("String", "FLAVOR_CONFIGURATION", '"staging"')
+            resValue "string", "app_name", "Flashlight Staging"
+        }
+        prod {
+            dimension "flavors"
+            // resValue "string", "app_name", "Flashlight" 
+            // buildConfigField("String", "FLAVOR_CONFIGURATION", '"production"')
+            resValue "string", "app_name", "Flashlight"
+        }
+    } 
+}
+
+flutter {
+    source = "../.."
+}
