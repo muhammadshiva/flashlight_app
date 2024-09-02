@@ -1,14 +1,20 @@
+import 'dart:developer';
+
 import 'package:flashlight_cashier/configs/themes/app_colors.dart';
 import 'package:flashlight_cashier/configs/themes/app_fonts.dart';
 import 'package:flashlight_cashier/constants/app_image_constant.dart';
+import 'package:flashlight_cashier/features/customer_type/controllers/customer_type_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 
 class CustomerTypeScreen extends StatelessWidget {
   const CustomerTypeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final controller = CustomerTypeController.to;
+
     // Get the screen height and width
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
@@ -88,17 +94,13 @@ class CustomerTypeScreen extends StatelessWidget {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      sosmedCard(
-                          imagePath: AppImageConstant.icInstagram,
-                          title: '@flashlightcleanstar'),
-                      sosmedCard(
-                          imagePath: AppImageConstant.icTiktok,
-                          title: '@flashlightcleanstar'),
-                      sosmedCard(
-                          imagePath: AppImageConstant.icWa,
-                          title: '0822 5744 8420'),
-                    ],
+                    children: controller.sosmedDataList.map(
+                      (element) {
+                        return sosmedCard(
+                            imagePath: element['imagePath'].toString(),
+                            title: element['title'].toString());
+                      },
+                    ).toList(),
                   ),
                 ),
               ],
@@ -129,44 +131,50 @@ class CustomerTypeScreen extends StatelessWidget {
                   //* Customer Type Card
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      customerTypeCard(
-                        icon: Icons.person,
-                        title: 'Customer Baru',
-                      ),
-                      20.horizontalSpace,
-                      customerTypeCard(
-                        icon: Icons.group,
-                        title: 'Member',
-                      ),
-                    ],
+                    children: controller.customerTypeList
+                        .map((element) {
+                          return customerTypeCard(
+                            icon: element['icon'] as IconData,
+                            title: element['title'].toString(),
+                            controller: controller,
+                          );
+                        })
+                        .toList()
+                        .expand((widget) => [widget, 20.horizontalSpace])
+                        .toList()
+                      ..removeLast(), // Remove the last Spacer
                   ),
 
                   30.verticalSpace,
                   //* Start Order Button
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 25.w),
-                    child: Container(
-                      alignment: Alignment.center,
-                      width: double.infinity,
-                      height: 48.w,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8.r),
-                        color: AppColors.accentOrange,
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFEA7C69).withOpacity(0.3),
-                            offset: const Offset(0, 8),
-                            blurRadius: 24,
-                            spreadRadius: 0,
+                    child: InkWell(
+                      onTap: () {
+                        log('Start Order');
+                      },
+                      child: Container(
+                        alignment: Alignment.center,
+                        width: double.infinity,
+                        height: 48.w,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8.r),
+                          color: AppColors.accentOrange,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFEA7C69).withOpacity(0.3),
+                              offset: const Offset(0, 8),
+                              blurRadius: 24,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          'Start Order',
+                          style: AppFonts.poppinsTextStyle.copyWith(
+                            fontSize: 14.sp,
+                            fontWeight: semiBold,
                           ),
-                        ],
-                      ),
-                      child: Text(
-                        'Start Order',
-                        style: AppFonts.poppinsTextStyle.copyWith(
-                          fontSize: 14.sp,
-                          fontWeight: semiBold,
                         ),
                       ),
                     ),
@@ -243,29 +251,40 @@ class CustomerTypeScreen extends StatelessWidget {
   Widget customerTypeCard({
     required IconData icon,
     required String title,
+    required CustomerTypeController controller,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      height: 157.w,
-      width: 136.w,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10.r),
-        border: Border.all(
-          color: AppColors.accentOrange,
-        ),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, size: 100.w),
-          Text(
-            title,
-            style: AppFonts.poppinsTextStyle.copyWith(
-              color: AppColors.darkSlate,
-              fontWeight: semiBold,
-              fontSize: 13.sp,
+    return InkWell(
+      onTap: () {
+        controller.customerType.value = title;
+        log('Customer Type : ${controller.customerType.value}');
+      },
+      child: Obx(
+        () => Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          height: 157.w,
+          width: 136.w,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(
+              color: controller.customerType.value != title
+                  ? AppColors.lightGray2
+                  : AppColors.accentOrange,
             ),
           ),
-        ],
+          child: Column(
+            children: [
+              Icon(icon, size: 100.w),
+              Text(
+                title,
+                style: AppFonts.poppinsTextStyle.copyWith(
+                  color: AppColors.darkSlate,
+                  fontWeight: semiBold,
+                  fontSize: 13.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
